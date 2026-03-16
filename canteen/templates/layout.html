@@ -1,0 +1,180 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+{% tailwind_css %}
+
+<link rel="icon" href="{% static 'media/canteen.png' %}">
+
+<title>
+{% block title %} Canteen Automation System {% endblock title %}
+</title>
+
+<style>
+
+@media (max-width: 640px) {
+nav{
+flex-direction:column;
+}
+nav div{
+width:100%;
+text-align:center;
+}
+nav button{
+margin-top:8px;
+}
+}
+
+/* NAV LINK HOVER ANIMATION */
+
+.nav-link{
+position:relative;
+transition:0.3s;
+}
+
+.nav-link:hover{
+color:#dc2626;
+transform:scale(1.05);
+}
+
+.nav-link::after{
+content:"";
+position:absolute;
+width:0%;
+height:2px;
+bottom:-4px;
+left:0;
+background:#dc2626;
+transition:0.4s;
+}
+
+.nav-link:hover::after{
+width:100%;
+}
+
+/* LOGO HOVER */
+
+.logo:hover{
+transform:scale(1.1);
+transition:.3s;
+}
+
+/* BUTTON HOVER */
+
+.btn-hover:hover{
+transform:scale(1.05);
+box-shadow:0 0 10px rgba(220,38,38,0.6);
+transition:.3s;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<nav class="flex justify-between items-center p-5 shadow-md bg-white">
+
+<div class="w-1/4 text-lg font-bold">
+
+<div class="flex flex-row">
+
+<div class="hidden md:block">
+
+<a href="{% url 'home' %}">
+<img src="{% static 'media/canteen.png' %}"
+class="logo"
+width="40px"
+height="40px">
+</a>
+
+</div>
+
+<div class="inline-flex items-center ml-4">
+
+<a href="{% url 'home' %}">
+<h1 class="text-2xl font-bold text-red-500 hover:text-red-700 transition">
+CAS
+</h1>
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+{% if user.is_superuser %}
+
+<div class="w-1/6 text-lg font-bold">
+<a href="{% url 'register' %}" class="nav-link">
+Register Staff
+</a>
+</div>
+
+<div class="w-1/6 text-lg font-bold">
+<a href="{% url 'order' %}" class="nav-link">
+Order
+</a>
+</div>
+
+<div class="w-1/6 text-lg font-bold">
+<a href="{% url 'items' %}" class="nav-link">
+View Items
+</a>
+</div>
+
+<div class="w-1/6 text-lg font-bold">
+<a href="{% url 'addItems' %}" class="nav-link">
+Add Items
+</a>
+</div>
+
+<div class="w-1/6 text-lg font-bold">
+<a href="{% url 'summary' %}" class="nav-link">
+Summary
+</a>
+</div>
+
+{% else %}
+
+{% if user.is_authenticated %}
+
+<div class="w-1/6 text-lg font-bold">
+<a href="{% url 'viewOrders' %}" class="nav-link">
+View Orders
+</a>
+</div>
+
+{% endif %}
+
+{% endif %}
+
+<div class="w-1/6 text-lg font-bold">
+
+{% if user.is_authenticated %}
+
+<button class="btn-hover px-4 py-2 bg-red-500 hover:bg-red-700 text-white font-bold rounded-full">
+<a href="{% url 'logout' %}">Logout</a>
+</button>
+
+{% else %}
+
+<button class="btn-hover px-4 py-2 bg-red-500 hover:bg-red-700 text-white font-bold rounded-full">
+<a href="{% url 'login' %}">Login</a>
+</button>
+
+{% endif %}
+
+</div>
+
+</nav>
+
+{% block content %} {% endblock content %}
+
+</body>
+</html>

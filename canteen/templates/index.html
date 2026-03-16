@@ -1,0 +1,191 @@
+{% extends 'layout.html' %}
+{% block content %}
+{% load static %}
+
+<!-- HERO SECTION -->
+
+<div class="min-h-screen relative overflow-hidden">
+
+<div class="absolute inset-0">
+<img
+src="https://images.unsplash.com/photo-1504674900247-0877df9cc836"
+class="w-full h-full object-cover scale-110 animate-slowzoom">
+
+<div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80"></div>
+</div>
+
+
+<div class="relative z-10 flex flex-col justify-center items-center text-center text-white h-screen px-6">
+
+<h1 class="text-6xl font-extrabold mb-6 animate-fade">
+Delicious Food Delivered Fast
+</h1>
+
+<p class="text-xl text-gray-200 max-w-xl mb-10 animate-fade delay-200">
+Order food easily with our automated canteen system.
+Fast ordering, easy management and better experience.
+</p>
+
+<a href="/login"
+class="px-10 py-4 bg-red-500 text-white text-lg font-semibold rounded-full
+shadow-xl transition duration-300 transform
+hover:bg-red-600 hover:scale-110 hover:shadow-2xl
+animate-fade delay-300">
+
+Login to Order
+
+</a>
+
+</div>
+</div>
+
+
+
+<!-- FOOD CATEGORY SECTION -->
+
+<div class="bg-white py-16 px-10">
+
+<div class="flex justify-between items-center mb-10">
+
+<h2 class="text-3xl font-bold">
+Order our best food options
+</h2>
+
+</div>
+
+
+<!-- SCROLL CONTAINER -->
+
+<div class="flex gap-10 overflow-x-auto scroll-smooth food-scroll pb-5">
+
+<!-- ITEM -->
+
+<div class="food-card">
+<img src="https://cdn-icons-png.flaticon.com/512/3480/3480618.png">
+<p>North Indian</p>
+</div>
+
+<div class="food-card">
+<img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png">
+<p>Biryani</p>
+</div>
+
+<div class="food-card">
+<img src="https://cdn-icons-png.flaticon.com/512/1046/1046784.png">
+<p>Chinese</p>
+</div>
+
+<div class="food-card">
+<img src="https://cdn-icons-png.flaticon.com/512/6978/6978255.png">
+<p>Pizza</p>
+</div>
+
+<div class="food-card">
+<img src="https://cdn-icons-png.flaticon.com/512/877/877951.png">
+<p>Burger</p>
+</div>
+
+<div class="food-card">
+<img src="https://cdn-icons-png.flaticon.com/512/5787/5787016.png">
+<p>Desserts</p>
+</div>
+
+<div class="food-card">
+<img src="https://cdn-icons-png.flaticon.com/512/3183/3183463.png">
+<p>Momos</p>
+</div>
+
+<div class="food-card">
+<img src="https://cdn-icons-png.flaticon.com/512/5787/5787070.png">
+<p>Cake</p>
+</div>
+
+<div class="food-card">
+<img src="https://cdn-icons-png.flaticon.com/512/1046/1046784.png">
+<p>Noodles</p>
+</div>
+
+<div class="food-card">
+<img src="https://cdn-icons-png.flaticon.com/512/2718/2718224.png">
+<p>Coffee</p>
+</div>
+
+<div class="food-card">
+<img src="https://cdn-icons-png.flaticon.com/512/590/590685.png">
+<p>Tea</p>
+</div>
+
+</div>
+
+</div>
+
+
+
+<style>
+
+/* FOOD CARD */
+
+.food-card{
+min-width:120px;
+text-align:center;
+cursor:pointer;
+transition:0.3s;
+}
+
+.food-card img{
+width:100px;
+margin:auto;
+}
+
+.food-card p{
+margin-top:8px;
+font-weight:600;
+}
+
+.food-card:hover{
+transform:scale(1.1);
+}
+
+/* HIDE SCROLLBAR */
+
+.food-scroll::-webkit-scrollbar{
+display:none;
+}
+
+/* HERO ANIMATIONS */
+
+@keyframes fade{
+from{
+opacity:0;
+transform:translateY(30px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+.animate-fade{
+animation:fade 1s ease forwards;
+}
+
+.delay-200{
+animation-delay:0.2s;
+}
+
+.delay-300{
+animation-delay:0.4s;
+}
+
+@keyframes slowzoom{
+from{transform:scale(1);}
+to{transform:scale(1.1);}
+}
+
+.animate-slowzoom{
+animation:slowzoom 20s linear infinite alternate;
+}
+
+</style>
+
+{% endblock %}

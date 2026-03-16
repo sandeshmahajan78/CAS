@@ -1,0 +1,178 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %} View Items | CAS {% endblock title %}
+
+{% block content %}
+
+<!-- MESSAGE ALERT -->
+
+{% if messages %}
+<div class="max-w-xl mx-auto mt-6">
+{% for message in messages %}
+
+<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow text-center mb-3">
+{{message}}
+</div>
+
+{% endfor %}
+</div>
+{% endif %}
+
+
+{% if request.user.is_superuser %}
+
+<!-- ADD ITEM BUTTON -->
+
+<div class="flex justify-center my-8">
+
+<a href="/addItems/">
+
+<button class="add-btn flex items-center gap-3 text-white px-8 py-3 rounded-full shadow-lg">
+
+<img src="{% static 'media/add.svg' %}" width="25px">
+
+Add New Item
+
+</button>
+
+</a>
+
+</div>
+
+
+<!-- ITEMS GRID -->
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-10 pb-10">
+
+{% for item in items %}
+
+<div class="item-card bg-white shadow-xl rounded-2xl p-6 text-center">
+
+<img
+src="{{ item.image.url }}"
+class="w-40 h-40 object-cover mx-auto rounded-xl mb-4"
+/>
+
+<h2 class="text-xl font-bold text-gray-800">
+{{item.name}}
+</h2>
+
+<p class="text-red-500 font-semibold">
+₹ {{item.price}}
+</p>
+
+<p class="text-gray-500">
+{{item.category}}
+</p>
+
+<p class="text-gray-600 text-sm mt-2">
+{{item.description}}
+</p>
+
+
+<!-- ACTION BUTTONS -->
+
+<div class="flex justify-center gap-4 mt-4">
+
+<a href="/deleteItem/{{item.itemNo}}">
+
+<button class="action-btn bg-red-100">
+
+<img src="{% static 'media/delete.svg' %}" width="22px">
+
+</button>
+
+</a>
+
+<a href="/updateItem/{{item.itemNo}}">
+
+<button class="action-btn bg-blue-100">
+
+<img src="{% static 'media/update.svg' %}" width="22px">
+
+</button>
+
+</a>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+
+{% else %}
+
+<div class="flex justify-center items-center h-screen">
+
+<div class="bg-red-500 text-white px-10 py-6 rounded-xl shadow-xl text-xl font-semibold">
+You are not an Administrator!
+</div>
+
+</div>
+
+{% endif %}
+
+
+
+<style>
+
+/* ITEM CARD */
+
+.item-card{
+
+transition:0.4s;
+
+}
+
+.item-card:hover{
+
+transform:translateY(-10px);
+
+box-shadow:0 20px 40px rgba(0,0,0,0.2);
+
+}
+
+
+/* ADD BUTTON */
+
+.add-btn{
+
+background:linear-gradient(45deg,#ef4444,#dc2626);
+
+transition:0.3s;
+
+}
+
+.add-btn:hover{
+
+transform:scale(1.05);
+
+box-shadow:0 0 20px rgba(239,68,68,0.6);
+
+}
+
+
+/* ACTION BUTTON */
+
+.action-btn{
+
+padding:10px;
+
+border-radius:50%;
+
+transition:0.3s;
+
+}
+
+.action-btn:hover{
+
+transform:scale(1.2);
+
+}
+
+</style>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'layout.html' %} 
+{% block title %} View Orders | CAS {% endblock title %}
+{% block content %}
+<form
+  action="{% url 'markCompleted' %}"
+  method="post"
+  id="mark-order-completed-form"
+>
+  {% csrf_token %}
+  <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+    {% for order in orders %} 
+    {% if order.isPaid and not order.isCompleted %}
+    <div class="border shadow-lg m-5 p-10">
+      <div class="flex justify-between">
+    <li>Token: {{ order.tokenNo }}</li>
+    <input
+      type="checkbox"
+      name="order_ids"
+      value="{{ order.tokenNo }}"
+      onclick="submitForm()"
+    />
+      </div>
+    <ul>
+      {% for order_item in order.items.all %}
+      <li>
+        Item: {{ order_item.item.name }} - Quantity: {{ order_item.quantity }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+    {% endif %} {% endfor %}
+  </ul>
+
+  <script>
+    function submitForm() {
+      // Get the form element with the id attribute set to "mark-order-completed-form"
+      var form = document.getElementById('mark-order-completed-form');
+
+      // Submit the form
+      form.submit();
+    }
+  </script>
+
+  {% endblock %}
+</form>

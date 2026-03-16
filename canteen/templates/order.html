@@ -1,0 +1,228 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %} Order | CAS {% endblock title %}
+
+{% block content %}
+
+{% if not items %}
+<div class="text-center text-xl font-bold mt-10">No items available</div>
+{% endif %}
+
+<!-- TOP FOOD AUTO SCROLL BANNER -->
+
+<div class="overflow-hidden bg-gray-100 py-6 mb-10">
+
+<div class="slider-track flex gap-10 px-10">
+
+<img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38" class="food-slide">
+<img src="https://images.unsplash.com/photo-1550547660-d9450f859349" class="food-slide">
+<img src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092" class="food-slide">
+<img src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe" class="food-slide">
+<img src="https://images.unsplash.com/photo-1551782450-a2132b4ba21d" class="food-slide">
+<img src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d" class="food-slide">
+
+<!-- duplicate for infinite scroll -->
+
+<img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38" class="food-slide">
+<img src="https://images.unsplash.com/photo-1550547660-d9450f859349" class="food-slide">
+<img src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092" class="food-slide">
+
+</div>
+
+</div>
+
+<form
+action="{% url 'order' %}"
+method="post"
+enctype="multipart/form-data"
+onsubmit="return checkCheckboxes()"
+>
+
+{% csrf_token %}
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-8">
+
+{% for item in items %}
+
+<div class="food-card bg-white shadow-xl rounded-2xl p-6 transition duration-500
+            {% if not item.isAvailable %} opacity-40 {% endif %}">
+
+<div class="flex justify-center mb-4 overflow-hidden rounded-xl">
+
+<img src="{{item.image.url}}"
+class="food-img w-32 h-32 object-cover">
+
+</div>
+
+<div class="space-y-2 text-center">
+
+<h2 class="text-xl font-bold text-gray-800">
+{{ item.name }}
+</h2>
+
+<p class="text-red-500 font-semibold">
+₹ {{ item.price }}
+</p>
+
+<p class="text-gray-500 text-sm">
+{{ item.get_category_display }}
+</p>
+
+<p class="text-gray-600 text-sm">
+{{ item.description }}
+</p>
+
+</div>
+
+<div class="flex justify-center items-center gap-4 mt-4">
+
+<input
+type="checkbox"
+name="item_ids"
+value="{{ item.itemNo }}"
+{% if not item.isAvailable %} disabled {% endif %}
+onclick="checkCheckboxes()"
+class="w-5 h-5 cursor-pointer"
+/>
+
+<input
+type="number"
+name="quantities"
+value="0"
+min="0"
+max="{{ item.quantity }}"
+class="border rounded-lg px-2 py-1 w-16 text-center"
+/>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<div class="flex justify-center">
+
+<button
+class="order-btn mt-6 mb-10 text-white font-bold py-3 px-8 rounded-full shadow-lg"
+id="submit-button"
+type="submit"
+disabled>
+
+Place Order
+
+</button>
+
+</div>
+
+</form>
+
+
+<style>
+
+/* FOOD CARD HOVER */
+
+.food-card:hover{
+transform:translateY(-10px);
+box-shadow:0 20px 40px rgba(0,0,0,0.2);
+}
+
+/* IMAGE ZOOM */
+
+.food-img{
+transition:0.5s;
+}
+
+.food-card:hover .food-img{
+transform:scale(1.15);
+}
+
+/* BUTTON STYLE */
+
+.order-btn{
+background:linear-gradient(45deg,#ef4444,#dc2626);
+transition:0.3s;
+}
+
+.order-btn:hover{
+transform:scale(1.05);
+box-shadow:0 0 20px rgba(239,68,68,0.6);
+}
+
+/* FOOD SCROLL IMAGES */
+
+.food-slide{
+
+width:220px;
+height:150px;
+object-fit:cover;
+border-radius:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+transition:0.4s;
+
+}
+
+.food-slide:hover{
+transform:scale(1.1);
+}
+
+.slider-track{
+display:flex;
+width:max-content;
+animation:scrollFood 25s linear infinite;
+}
+
+@keyframes scrollFood{
+
+0%{
+transform:translateX(0);
+}
+
+100%{
+transform:translateX(-50%);
+}
+
+}
+
+</style>
+
+
+<script>
+
+function checkCheckboxes(){
+
+var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+var number = document.querySelectorAll('input[type="number"]');
+var submitButton = document.getElementById('submit-button');
+
+var isChecked = false;
+
+for (var i = 0; i < checkboxes.length; i++){
+
+if (checkboxes[i].checked){
+
+isChecked = true;
+
+if(number[i].value==='0')
+number[i].value=1
+
+}
+
+else{
+
+number[i].value=0
+
+}
+
+}
+
+submitButton.disabled = !isChecked;
+
+return isChecked;
+
+}
+
+</script>
+
+{% endblock %}
