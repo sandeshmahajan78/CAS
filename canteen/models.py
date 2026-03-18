@@ -5,7 +5,7 @@ from cloudinary.models import CloudinaryField
 CATEGORY_CHOICES = (("D", "Desserts"), ("S", "Starters"), ("M", "Main Course"))
 MODE_OF_PAYMENT = (("C", "Cash"), ("O", "Online"))
 
-# Extending Django's User model for Canteen Owner & Kitchen Staffs
+
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     email = models.EmailField(max_length=254, blank=True)
@@ -52,28 +52,33 @@ class OrderItem(models.Model):
 
 class Order(models.Model):
     tokenNo = models.IntegerField(primary_key=True)
-    totalAmount = models.FloatField()
+    totalAmount = models.FloatField(default=0)
     isCompleted = models.BooleanField(default=False)
     isPaid = models.BooleanField(default=False)
     items = models.ManyToManyField(OrderItem)
+
     completedBy = models.ForeignKey(
         Account, on_delete=models.CASCADE, null=True, blank=True
     )
-    modeOfPayment = models.CharField(choices=MODE_OF_PAYMENT, max_length=2)
+
+    modeOfPayment = models.CharField(
+        choices=MODE_OF_PAYMENT, max_length=2, null=True, blank=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    # ✅ CUSTOMER NAME FIELD
+    customer_name = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
-        return str(self.tokenNo)
+        return f"Order {self.tokenNo} - {self.customer_name}"
 
     def get_total(self):
-        total = 0
-        for order_item in self.items.all():
-            total += order_item.get_total_item_price()
-        return total
+        return sum(item.get_total_item_price() for item in self.items.all())
 
     def save(self, *args, **kwargs):
         self.totalAmount = self.get_total()
         super().save(*args, **kwargs)
-
 
 class Bill(models.Model):
     billNo = models.AutoField(primary_key=True)
@@ -82,3 +87,13 @@ class Bill(models.Model):
 
     def __str__(self):
         return str(self.billNo)
+    
+def summary(request):
+    orders = Order.objects.select_related('user').prefetch_related('items').all().order_by('-date')
+
+    amount = Order.objects.aggregate(sum=Sum('total_price'))
+
+    return render(request, 'summary.html', {
+        'orders': orders,
+        'amount': amount
+    })

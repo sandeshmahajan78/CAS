@@ -29,15 +29,16 @@ margin-top:8px;
 }
 }
 
-/* NAV LINK HOVER ANIMATION */
+/* NAV LINK */
 
 .nav-link{
 position:relative;
 transition:0.3s;
+color:black;
 }
 
 .nav-link:hover{
-color:#dc2626;
+color:#38bdf8; /* sky blue accent */
 transform:scale(1.05);
 }
 
@@ -48,12 +49,31 @@ width:0%;
 height:2px;
 bottom:-4px;
 left:0;
-background:#dc2626;
+background:#38bdf8;
 transition:0.4s;
 }
 
 .nav-link:hover::after{
 width:100%;
+}
+
+/* LOGO */
+
+.logo:hover{
+transform:scale(1.1);
+transition:.3s;
+}
+
+/* BUTTON */
+
+.btn-hover{
+background:linear-gradient(135deg,#2563eb,#38bdf8);
+}
+
+.btn-hover:hover{
+transform:scale(1.05);
+box-shadow:0 0 12px rgba(56,189,248,0.5);
+transition:.3s;
 }
 
 /* LOGO HOVER */
@@ -77,7 +97,7 @@ transition:.3s;
 
 <body>
 
-<nav class="flex justify-between items-center p-5 shadow-md bg-white">
+<nav class="flex justify-between items-center p-5 shadow-lg bg-gray-900 text-gray-200">
 
 <div class="w-1/4 text-lg font-bold">
 

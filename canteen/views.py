@@ -134,35 +134,40 @@ def order(request):
     if request.method == "POST":
         item_ids = request.POST.getlist("item_ids")
         quantities = request.POST.getlist("quantities")
-        quantities=[q for q in quantities if q!='0']
 
-        # Generate a new token and check if it is already in use
+        # ✅ FIX: proper filtering (IMPORTANT)
+        filtered = [(i, q) for i, q in zip(item_ids, quantities) if q != '0']
+
+        # ✅ GET CUSTOMER NAME
+        customer_name = request.POST.get("customer_name")
+
         token = int(str(uuid.uuid4().int)[:3])
         while Order.objects.filter(tokenNo=token).exists():
             token = int(str(uuid.uuid4().int)[:3])
-        order = Order(tokenNo=token)
+
+        # ✅ CREATE ORDER
+        order = Order(tokenNo=token, customer_name=customer_name)
         order.save()
 
-        # Create the order items and add them to the order
-        for item_id, quantity in zip(item_ids, quantities):
+        # ✅ SAVE ITEMS CORRECTLY
+        for item_id, quantity in filtered:
             item = Item.objects.get(itemNo=item_id)
 
-
-            # Update the quantity of the existing order item, or create a new one
-            order_item =OrderItem(quantity=quantity,item=item)
+            order_item = OrderItem(
+                quantity=int(quantity),   # 🔥 IMPORTANT (int)
+                item=item
+            )
             order_item.save()
 
-            # Add the order item to the order
             order.items.add(order_item)
 
-        # Calculate and set the total amount for the order
+        # ✅ TOTAL
         order.totalAmount = order.get_total()
         order.save()
+
         return HttpResponseRedirect("/billing/{}".format(token))
 
     return render(request, "order.html", context)
-
-
 def viewOrders(request):
     if not request.user.is_authenticated:
         return redirect("login")
@@ -195,65 +200,84 @@ def billing(request, tokenNo):
     if not request.user.is_authenticated:
         return redirect("login")
 
-    # Create a queryset with only the specified Order object
     orders = Order.objects.filter(tokenNo=tokenNo)
-    modeOfPayment = ""
+
     if request.method == "POST":
         modeOfPayment = request.POST.get("modeOfPayment")
         password = request.POST.get("password")
 
-        # Check if the entered password is correct
         if check_password(password, request.user.password):
             order = orders.first()
             order.modeOfPayment = modeOfPayment
             order.isPaid = True
             order.save()
 
-            # Generate a bill for the order
-            bill = Bill.objects.create(amount=order.totalAmount, order=order)
+            # Create Bill
+            Bill.objects.create(amount=order.totalAmount, order=order)
 
-            bill.save()
-            # Create a canvas and set the font size
-            c = canvas.Canvas("invoice.pdf")
-            c.setFontSize(24)
+            # ===== CREATE PDF RESPONSE =====
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename=invoice_{order.tokenNo}.pdf'
 
-            # Write the invoice header
-            c.drawString(100, 750, "Invoice" + str(order.tokenNo))
+            c = canvas.Canvas(response)
 
-            # Set the font size for the table
-            c.setFontSize(14)
+            # ===== HEADER =====
+            c.setFont("Helvetica-Bold", 20)
+            c.drawString(180, 800, "CANTEEN AUTOMATION SYSTEM")
 
-            # Write the table headers
-            c.drawString(100, 725, "Item")
-            c.drawString(250, 725, "Quantity")
-            c.drawString(350, 725, "Total Amount")
+            c.setFont("Helvetica", 14)
+            c.drawString(230, 780, "INVOICE")
 
-            # Set the font size for the table rows
-            c.setFontSize(12)
+            # ===== ORDER DETAILS =====
+            c.setFont("Helvetica", 12)
+            c.drawString(50, 750, f"Order No: {order.tokenNo}")
+            c.drawString(50, 730, f"User: {request.user.username}")
+            c.drawString(50, 710, f"Date: {order.created_at.strftime('%Y-%m-%d')}")
 
-            # Write the table rows
-            y = 700
+            # ===== TABLE HEADER =====
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(50, 670, "Item")
+            c.drawString(250, 670, "Qty")
+            c.drawString(320, 670, "Price")
+            c.drawString(400, 670, "Total")
+
+            c.line(50, 665, 500, 665)
+
+            # ===== TABLE DATA =====
+            c.setFont("Helvetica", 11)
+            y = 640
+
             for order_item in order.items.all():
-                c.drawString(100, y, order_item.item.name)
+                c.drawString(50, y, order_item.item.name)
                 c.drawString(250, y, str(order_item.quantity))
-                y -= 25
+                c.drawString(320, y, str(order_item.item.price))
+                c.drawString(400, y, str(order_item.totalAmount))
+                y -= 20
 
-            # Write the total amount
-            c.drawString(100, y, "Total Amount")
-            c.drawString(350, y, str(order.totalAmount))
+            # ===== TOTAL =====
+            c.line(50, y, 500, y)
+            y -= 20
 
-            # Write the mode of payment
-            c.drawString(100, y - 25, "Mode of Payment")
-            c.drawString(350, y - 25, order.get_modeOfPayment_display())
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(300, y, "Total:")
+            c.drawString(400, y, f"₹{order.totalAmount}")
 
-            # Save the PDF
+            # ===== PAYMENT MODE =====
+            y -= 30
+            c.setFont("Helvetica", 12)
+            c.drawString(50, y, "Payment Mode:")
+            c.drawString(200, y, order.get_modeOfPayment_display())
+
+            # ===== FOOTER =====
+            y -= 50
+            c.setFont("Helvetica-Oblique", 11)
+            c.drawString(180, y, "Thank you! Visit Again 🙏")
+
+            # Save PDF
             c.save()
 
-            # Read the generated PDF and send it as response
-            with open("invoice.pdf", "rb") as pdf:
-                response = HttpResponse(pdf.read(), content_type="application/pdf")
-                response["Content-Disposition"] = "attachment; filename=invoice.pdf"
-                return response
+            return response
+
         else:
             messages.error(request, "Incorrect password")
             return redirect("billing", tokenNo=tokenNo)
@@ -266,8 +290,22 @@ def summary(request):
     if not request.user.is_authenticated:
         return redirect("login")
 
-    items_sorted=OrderItem.objects.select_related('item').values('item','item__name').all().annotate(sum=Sum('quantity')).order_by('-sum')
-    amount=Order.objects.filter(isPaid=True).aggregate(sum=Sum('totalAmount'))
+    # Item summary
+    items_sorted = OrderItem.objects.select_related('item') \
+        .values('item', 'item__name') \
+        .annotate(sum=Sum('quantity')) \
+        .order_by('-sum')
 
-    context={'items':items_sorted,'amount':amount}
-    return render(request, "summary.html",context)
+    # Total revenue
+    amount = Order.objects.filter(isPaid=True).aggregate(sum=Sum('totalAmount'))
+
+    # 🔥 ADD THIS (IMPORTANT)
+    orders = Order.objects.prefetch_related('items__item').all().order_by('-created_at')
+
+    context = {
+        'items': items_sorted,
+        'amount': amount,
+        'orders': orders   # ✅ THIS FIXES YOUR ISSUE
+    }
+
+    return render(request, "summary.html", context)

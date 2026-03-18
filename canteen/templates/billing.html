@@ -1,40 +1,111 @@
-{% extends 'layout.html' %} {% block title %} Billing | CAS {% endblock title %}
+{% extends 'layout.html' %}
+{% block title %} Billing | CAS {% endblock title %}
+
 {% block content %}
-<div class="flex flex-col border w-auto mx-auto my-5 p-10 lg:w-1/2">
+<div class="max-w-2xl mx-auto my-10 p-8 border shadow-lg bg-white print:shadow-none">
+
   {% for order in orders %}
-  <div class="mx-auto text-center">
-  <h2 class="text-2xl font-bold text-red-500">Order #{{ order.tokenNo }}</h2>
+  
+  <!-- Invoice Header -->
+  <div class="text-center border-b pb-4 mb-4">
+    <h1 class="text-3xl font-bold text-red-600">🍽️ Your Canteen Name</h1>
+    <p class="text-gray-500">Invoice</p>
+  </div>
 
-  <ul>
-    {% for order_item in order.items.all %}
-    <li>
-      {{ order_item.item.name }} x {{ order_item.quantity }}: {{ order_item.totalAmount }}
-    </li>
-    {% endfor %}
-  </ul>
+  <!-- Order + User Info -->
+  <div class="flex justify-between mb-4 text-sm">
+    <div>
+      <p><strong>Order No:</strong> {{ order.tokenNo }}</p>
+      <p><strong>Customer:</strong> {{ order.customer_name }}</p> <!-- ✅ ADDED -->
+      <p><strong>Date:</strong> {{ order.created_at }}</p>
+    </div>
+    <div class="text-right">
+      <p><strong>User:</strong> {{ request.user.username }}</p>
+      <p><strong>Payment:</strong> {{ order.get_modeOfPayment_display }}</p>
+    </div>
+  </div>
 
-  <p class="text-xl font-bold">Total: {{ order.totalAmount }}</p>
-</div>
-  <form method="POST" class="flex flex-col border w-auto mx-auto my-5 p-10 lg:w-1/2 gap-5">
+  <!-- Items Table -->
+  <table class="w-full border-collapse border mb-4">
+    <thead>
+      <tr class="bg-red-500 text-white">
+        <th class="border p-2">Item</th>
+        <th class="border p-2">Qty</th>
+        <th class="border p-2">Price</th>
+        <th class="border p-2">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order_item in order.items.all %}
+      <tr class="text-center">
+        <td class="border p-2">{{ order_item.item.name }}</td>
+        <td class="border p-2">{{ order_item.quantity }}</td>
+        <td class="border p-2">{{ order_item.item.price }}</td>
+        <td class="border p-2">{{ order_item.totalAmount }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Total -->
+  <div class="text-right text-xl font-bold mb-6">
+    Total: ₹{{ order.totalAmount }}
+  </div>
+
+  <!-- Payment Form -->
+  <form method="POST" class="flex flex-col gap-4 print:hidden">
     {% csrf_token %}
-    <select name="modeOfPayment">
+
+    <!-- ✅ CUSTOMER NAME INPUT -->
+    <input
+      type="text"
+      name="customer_name"
+      placeholder="Enter Customer Name"
+      class="border p-2 rounded"
+      value="{{ order.customer_name }}"
+      required
+    />
+
+    <select name="modeOfPayment" class="border p-2 rounded">
       <option value="C">Cash</option>
       <option value="O">Online</option>
     </select>
+
     <input
       type="password"
       name="password"
       placeholder="Enter password to proceed"
+      class="border p-2 rounded"
     />
-    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">Pay</button>
+
+    <button class="bg-red-500 hover:bg-red-700 text-white py-2 rounded">
+      Pay
+    </button>
   </form>
+
+  <!-- Print Button -->
+  <div class="text-center mt-4 print:hidden">
+    <button onclick="window.print()" 
+      class="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded">
+      🖨️ Print Invoice
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <div class="text-center text-sm text-gray-500 mt-6 border-t pt-3">
+    Thank you! Visit Again 🙏
+  </div>
+
+  {% endfor %}
+
+  <!-- Messages -->
   {% if messages %}
-  <ul>
-      {% for message in messages %}
-      <li> {{ message }} </li>
-      {% endfor %}
+  <ul class="mt-4">
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
   </ul>
   {% endif %}
-  {% endfor %}
+
 </div>
 {% endblock %}
